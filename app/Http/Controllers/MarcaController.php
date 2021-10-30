@@ -38,6 +38,9 @@ class MarcaController extends Controller
      */
     public function store(Request $request)
     {
+        //método de validação//
+        $request->validate($this->marca->rules(), $this->marca->feedback());
+
         try {
             $marca = $this->marca->create($request->all());
             return response()->json($marca, 201);
@@ -80,6 +83,22 @@ class MarcaController extends Controller
             if (!$marca) {
                 return response()->json(['error' => 'Impossivel realizar atualização. O recurso solicitado não existe'], 404);
             }
+
+            if ($request->method() === 'PATCH') {
+                $dynamicRules = array();
+                //percorrendo array de regras definidas no model
+
+                foreach ($marca->rules() as $input => $rule) {
+                    if (array_key_exists($input, $request->all())) {
+                        $dynamicRules[$input] = $rule;
+                    }
+                }
+
+                $request->validate($dynamicRules, $marca->feedback());
+            } else {
+                $request->validate($marca->rules(), $marca->feedback());
+            }
+
             $marca->update($request->all());
             return response()->json($marca, 200);
         } catch (\Exception $e) {
@@ -103,7 +122,6 @@ class MarcaController extends Controller
             $marca->delete();
 
             return response()->json(['msg' => 'Marca removida com sucesso'], 200);
-
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
         }
