@@ -17,8 +17,8 @@ class Marca extends Model
     public function rules()
     {
         return [
-            'nome' => 'required|max:100|unique:marcas,nome,'.$this->id.'|min:3',
-            'imagem' => 'required'
+            'nome' => "required|max:100|unique:marcas|min:3",
+            'imagem' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048'
         ];
         //image|mimes:jpeg,png,jpg,gif,svg|max:2048
     }
@@ -27,6 +27,7 @@ class Marca extends Model
         return [
             'required' => 'O campo :attribute é obrigatório',
             'nome.string' => 'O nome da marca deve ser uma string',
+            'imagem.mimes' => 'A imagem pode ter as extensões: png,jpeg,jpg,gif,svg',
             'nome.unique' => 'Já existe uma marca com esse nome',
             'nome.min' => 'O nome deve ter no mínimo 3 caracteres',
             'nome.max' => 'O nome deve ter no menos de 100 caracteres'

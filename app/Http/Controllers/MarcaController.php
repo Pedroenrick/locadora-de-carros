@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Marca;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 use function PHPUnit\Framework\isEmpty;
 
@@ -40,9 +41,14 @@ class MarcaController extends Controller
     {
         //método de validação//
         $request->validate($this->marca->rules(), $this->marca->feedback());
-
         try {
-            $marca = $this->marca->create($request->all());
+            $image = $request->file('imagem');
+            $image_urn = $image->store('images', 'public');
+
+            $marca = $this->marca->create([
+                'nome' => $request->nome,
+                'imagem' => $image_urn,
+            ]);
             return response()->json($marca, 201);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -78,8 +84,10 @@ class MarcaController extends Controller
      */
     public function update(Request $request, $id)
     {
+
         try {
             $marca = $this->marca->find($id);
+
             if (!$marca) {
                 return response()->json(['error' => 'Impossivel realizar atualização. O recurso solicitado não existe'], 404);
             }
@@ -99,7 +107,19 @@ class MarcaController extends Controller
                 $request->validate($marca->rules(), $marca->feedback());
             }
 
-            $marca->update($request->all());
+            //remove o arquivo antigo
+            if ($request->file('imagem')) {
+                Storage::disk('public')->delete($marca->imagem);
+            }
+
+            $image = $request->file('imagem');
+            $image_urn = $image->store('images', 'public');
+
+            $marca = $this->marca->update([
+                'nome' => $request->nome,
+                'imagem' => $image_urn,
+            ]);
+
             return response()->json($marca, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -119,6 +139,10 @@ class MarcaController extends Controller
             if (!$marca) {
                 return response()->json(['error' => 'Impossivel realizar exclusão. O recurso solicitado não existe'], 404);
             }
+
+
+            Storage::disk('public')->delete($marca->imagem);
+
             $marca->delete();
 
             return response()->json(['msg' => 'Marca removida com sucesso'], 200);

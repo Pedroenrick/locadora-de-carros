@@ -20,10 +20,12 @@ class CreateModelosTable extends Migration
             $table->string('imagem', 100);
             $table->integer('numero_portas');
             $table->integer('lugares');
+            $table->integer('km_rodados');
+            $table->integer('ano_fabricacao');
             $table->boolean('air_bag');
             $table->boolean('abs');
             $table->timestamps();
-    
+
             //foreign key (constraints)
             $table->foreign('marca_id')->references('id')->on('marcas');
         });
