@@ -18,10 +18,23 @@ class ModeloController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $modelos = $this->modelo->all();
+            $modelos = array();
+            if ($request->has('atributos_marca')) {
+                $atributos_marca = $request->atributos_marca;
+                $modelos = $this->modelo->with("marca:id,$atributos_marca");
+            } else {
+                $modelos = $this->modelo->with('marca');
+            }
+
+            if ($request->has('atributos')) {
+                $atributos = $request->atributos;
+                $modelos = $modelos->selectRaw("marca_id,$atributos")->get();
+            } else {
+                $modelos = $modelos->get();
+            }
             return response()->json($modelos, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -68,7 +81,7 @@ class ModeloController extends Controller
     public function show($id)
     {
         try {
-            $modelo = $this->modelo->find($id);
+            $modelo = $this->modelo->with('marca')->find($id);
 
             if (!$modelo) {
                 return response()->json(['error' => 'modelo não encontrada'], 404);
@@ -119,17 +132,10 @@ class ModeloController extends Controller
             $image = $request->file('imagem');
             $image_urn = $image->store('images/modelos', 'public');
 
-            $modelo = $this->modelo->update([
-                'marca_id' => $request->marca_id,
-                'nome' => $request->nome,
-                'imagem' => $image_urn,
-                'numero_portas' => $request->numero_portas,
-                'lugares' => $request->lugares,
-                'km_rodados' => $request->km_rodados,
-                'ano_fabricacao' => $request->ano_fabricacao,
-                'air_bag' => $request->air_bag,
-                'abs' => $request->abs,
-            ]);
+            $modelo->fill($request->all());
+            $modelo->imagem = $image_urn;
+
+            $modelo->save();
 
             return response()->json($modelo, 200);
         } catch (\Exception $e) {

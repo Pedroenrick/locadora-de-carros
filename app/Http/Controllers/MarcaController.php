@@ -24,7 +24,7 @@ class MarcaController extends Controller
     public function index()
     {
         try {
-            $marcas = $this->marca->all();
+            $marcas = $this->marca->with('modelos')->get();
             return response()->json($marcas, 200);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -64,7 +64,7 @@ class MarcaController extends Controller
     public function show($id)
     {
         try {
-            $marca = $this->marca->find($id);
+            $marca = $this->marca->with('modelos')->find($id);
 
             if (!$marca) {
                 return response()->json(['error' => 'Marca não encontrada'], 404);
@@ -84,7 +84,6 @@ class MarcaController extends Controller
      */
     public function update(Request $request, $id)
     {
-
         try {
             $marca = $this->marca->find($id);
 
@@ -115,10 +114,10 @@ class MarcaController extends Controller
             $image = $request->file('imagem');
             $image_urn = $image->store('images', 'public');
 
-            $marca = $this->marca->update([
-                'nome' => $request->nome,
-                'imagem' => $image_urn,
-            ]);
+            $marca->fill($request->all());
+            $marca->imagem = $image_urn;
+
+            $marca->save();
 
             return response()->json($marca, 200);
         } catch (\Exception $e) {

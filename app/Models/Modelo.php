@@ -47,4 +47,9 @@ class Modelo extends Model
             'nome.max' => 'O nome deve ter no menos de 100 caracteres'
         ];
     }
+
+    public function marca()
+    {
+        return $this->belongsTo(Marca::class);
+    }
 }
