@@ -15,7 +15,6 @@ class Modelo extends Model
         'imagem',
         'numero_portas',
         'lugares',
-        'km_rodados',
         'ano_fabricacao',
         'air_bag',
         'abs'
