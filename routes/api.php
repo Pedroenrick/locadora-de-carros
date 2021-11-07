@@ -2,7 +2,12 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\CarroController;
+use App\Http\Controllers\LocacaoController;
+use App\Http\Controllers\MarcaController;
+use App\Http\Controllers\ModeloController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -19,8 +24,17 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::apiResource('cliente', 'App\Http\Controllers\ClienteController');
-Route::apiResource('carro', 'App\Http\Controllers\CarroController');
-Route::apiResource('locacao', 'App\Http\Controllers\LocacaoController');
-Route::apiResource('marca', 'App\Http\Controllers\MarcaController');
-Route::apiResource('modelo', 'App\Http\Controllers\ModeloController');
+Route::prefix('v1')->middleware('jwt.auth')->group(function () {
+    Route::post('me', [AuthController::class, 'me']);
+    Route::post('refresh', [AuthController::class, 'refresh']);
+    Route::post('logout', [AuthController::class, 'logout']);
+    Route::apiResource('cliente', ClienteController::class);
+    Route::apiResource('carro', CarroController::class);
+    Route::apiResource('locacao', LocacaoController::class);
+    Route::apiResource('marca', MarcaController::class);
+    Route::apiResource('modelo', ModeloController::class);
+});
+
+
+
+Route::post('login', [AuthController::class, 'login']);
